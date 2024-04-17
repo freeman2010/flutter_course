@@ -1,63 +1,74 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
-// MyApp is a StatefulWidget. This allows updating the state of the
-// widget when an item is removed.
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  MyAppState createState() {
-    return MyAppState();
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      title: 'Retrieve Text Input',
+      home: MyCustomForm(),
+    );
   }
 }
 
-class MyAppState extends State<MyApp> {
-  final items = List<String>.generate(20, (i) => 'Item ${i + 1}');
+// Define a custom Form widget.
+class MyCustomForm extends StatefulWidget {
+  const MyCustomForm({super.key});
+
+  @override
+  State<MyCustomForm> createState() => _MyCustomFormState();
+}
+
+// Define a corresponding State class.
+// This class holds data related to the Form.
+class _MyCustomFormState extends State<MyCustomForm> {
+  // Create a text controller and use it to retrieve the current value
+  // of the TextField.
+  final myController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Start listening to changes.
+    myController.addListener(_printLatestValue);
+  }
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the widget tree.
+    // This also removes the _printLatestValue listener.
+    myController.dispose();
+    super.dispose();
+  }
+
+  void _printLatestValue() {
+    final text = myController.text;
+    print('Second text field: $text (${text.characters.length})');
+  }
 
   @override
   Widget build(BuildContext context) {
-    const title = 'Dismissing Items';
-
-    return MaterialApp(
-      title: title,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Retrieve Text Input'),
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text(title),
-        ),
-        body: ListView.builder(
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return Dismissible(
-              // Each Dismissible must contain a Key. Keys allow Flutter to
-              // uniquely identify widgets.
-              key: Key(item),
-              // Provide a function that tells the app
-              // what to do after an item has been swiped away.
-              onDismissed: (direction) {
-                // Remove the item from the data source.
-                setState(() {
-                  items.removeAt(index);
-                });
-
-                // Then show a snackbar.
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text('$item dismissed')));
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              onChanged: (text) {
+                print('First text field: $text (${text.characters.length})');
               },
-              // Show a red background as the item is swiped away.
-              background: Container(color: Colors.red),
-              child: ListTile(
-                title: Text(item),
-              ),
-            );
-          },
+            ),
+            TextField(
+              controller: myController,
+            ),
+          ],
         ),
       ),
     );
